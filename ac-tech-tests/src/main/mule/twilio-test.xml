@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:twilio="http://www.mulesoft.org/schema/mule/twilio"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/twilio http://www.mulesoft.org/schema/mule/twilio/current/mule-twilio.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="5e9df155-333e-4171-9e10-d7bd35f66538" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<http:request-config name="HTTP_Request_configuration" doc:name="HTTP Request configuration" doc:id="f801ddfc-c2a0-4121-8b18-ffc87dcd8234" basePath="/2010-04-01/Accounts" >
+		<http:request-connection host="api.twilio.com" >
+			<http:authentication >
+				<http:basic-authentication username="AC51cc81f808a444dbcb6beb190d70602b" password="2c60868b52be534caccf6a1dfaeb0d6f" />
+			</http:authentication>
+		</http:request-connection>
+	</http:request-config>
+	<flow name="twilio-testFlow" doc:id="315df518-6249-4b9a-ada1-d22dabcdc0f5" >
+		<http:listener doc:name="Listener" doc:id="50819300-95f9-484a-898e-1e966eaf2247" config-ref="HTTP_Listener_config" path="/whatsapp-two-way-chat" allowedMethods="POST"/>
+		<ee:transform doc:name="Transform Message" doc:id="13f66251-1487-4f66-8793-cae2bcba70d9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/x-www-form-urlencoded
+---
+{ 
+    "Body": payload.body, 
+    "From": payload.fromNumber,       
+    "To": payload.toNumber 
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<http:request method="POST" doc:name="Request" doc:id="a43877ae-f2c7-46e1-9bde-3b69404d693e" config-ref="HTTP_Request_configuration" path="/AC51cc81f808a444dbcb6beb190d70602b/Messages.json"/>
+		<logger level="INFO" doc:name="Logger" doc:id="e74b4d87-14bd-4d54-bf9f-1195233f2893" message="Message sended successfully"/>
+	</flow>
+</mule>
